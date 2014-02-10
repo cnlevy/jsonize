@@ -1,7 +1,7 @@
 jsonize
 =======
 
-This extension is a simple to use function for json encoding ActiveRecord and their relations
+This extension is a simple to use function for json encoding CActiveRecord and their relations
 
 ##Requirements
 
@@ -27,17 +27,13 @@ This extension is a simple to use function for json encoding ActiveRecord and th
 ##API
 
 ~~~
-/**
- * calls json_encode(jsonize())
- * @see jsonize
- */
 function jsonizenc($data, $attributes=true, $onlySpecifiedRelations = false, $onlySpecifiedAttributes = false) {
 	return json_encode(jsonize($data, $attributes, $onlySpecifiedRelations, $onlySpecifiedAttributes));
 }
 /**
  * 
  * @param mixed $data an ActiveRecord or array of ActiveRecord
- * @param $attributes array of attributes/relations to be processed e.g array('client','items'=>array('product')) // nested relations
+ * @param $attributes array of attributes/relations to be processed e.g ['client','items' => ['product']] // nested relations
  * @param bool $onlySpecifiedRelations if to send all loaded relations or only the ones specified in $attributes 
  * @param bool $onlySpecifiedAttributes if to send all attributes or only the ones specified in $attributes 
  */
@@ -120,16 +116,18 @@ echo jsonizenc(User::model()->findAll()); // output [
 By default, all attributes (returned by getAttributes()) and all LOADED relations are processed
 
 - Narrowing the relations to be processed
-
-echo jsonizenc($user, array('posts'), true); // true means: only specified relations are to be processed (default: all loaded relations are processed)
-
+~~~
+echo jsonizenc($user, array('posts'), true); 
+// true means: only specified relations are to be processed (default: all loaded relations are processed)
+~~~
 - Narrowing the attributes
-
-echo jsonizenc($user, array('name'), true, true); // true means: only process specified attributes (default: all attributes)
+~~~
+echo jsonizenc($user, array('name'), true, true); 
+// true means: only process specified attributes (default: all attributes)
 // output: { name: 'David' }
 
 echo jsonizenc($user, array('name','posts'), true, true); // narrow relations and attributes
-
+~~~
 - Force loading relations
 
 ~~~
@@ -186,6 +184,8 @@ echo jsonizenc($users, array('posts'=>array('user'=>array('posts','comments'))))
 
 For nested relations, the for specifying which attributes/relations are to be processed policy is the same as
 the first one. For example:
-echo jsonizenc($users, array('posts'=>array('user','title'), true, true)); // only specified attributes and relations of posts will be processed
-
+~~~
+echo jsonizenc($users, array('id','posts'=>array('title','user'=>array('name')), true, true)); 
+// only specified attributes and relations of user, user.posts and user.posts.user will be processed
+~~~
 
