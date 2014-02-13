@@ -12,8 +12,7 @@ This extension is a simple to use function for json encoding CActiveRecord and t
 
 - copy jsonize.php into your protected/components folder
 - add the following line to your config/main.php: 
-~~~
-[php]
+~~~php
 'components' => array(
     ...
     'jsonize'=>array('class'=>'jsonize'),
@@ -21,15 +20,13 @@ This extension is a simple to use function for json encoding CActiveRecord and t
 ),
 ~~~
 - optionally preload the component:
-~~~
-[php]
+~~~php
 'preload' => array( ..., 'jsonize'),
 ~~~
 
 ##Usage
 
-~~~
-[php]
+~~~php
 Yii::app()->jsonize; // load the component (not needed if it is preloaded)
 
 $users = User::model()->with('votes')->findAll($criteria);
@@ -52,8 +49,7 @@ echo jsonizenc($users, array('id', 'username', 'email', 'first_name', 'last_name
 
 By default, all attributes (returned by getAttributes()) and all first-level LOADED relations are processed. Nested relations have to be loaded explicitly:
 
-~~~
-[php]
+~~~php
 echo jsonizenc($users, array('posts'=>array('comments'))); 
 // output {
 	"id":"1",
@@ -86,24 +82,21 @@ echo jsonizenc($users, array('posts'=>array('comments')));
 }
 ~~~
 There's no limit to this notation, you could do:
-~~~
-[php]
+~~~php
 echo jsonizenc($users, array('posts'=>array('user'=>array('posts','comments'))));
 // it will output also $user->posts, $user->posts->user, $user->posts->user->posts and $user->posts->user->comments
 ~~~
 ##Notes
 
 For nested relations, the policy specifying which attributes/relations are to be processed is the same as the first one. For example:
-~~~
-[php]
+~~~php
 echo jsonizenc($users, array('id','posts'=>array('title','user'=>array('name')), true, true)); 
 // only specified attributes and relations of user, user.posts and user.posts.user will be processed
 ~~~
 
 ##API
 
-~~~
-[php]
+~~~php
 /**
  * @param mixed $data an ActiveRecord or array of ActiveRecord
  * @param $attributes array of attributes/relations to be processed e.g ['client','items' => ['product']] // nested relations
@@ -120,7 +113,3 @@ function jsonizenc($data, $attributes=true, $onlySpecifiedRelations = false, $on
 }
 
 ~~~
-
-##Resources
-
-[Github](https://github.com/cnlevy/jsonize "Github")
