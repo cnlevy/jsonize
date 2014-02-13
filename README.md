@@ -13,6 +13,7 @@ This extension is a simple to use function for json encoding CActiveRecord and t
 - copy jsonize.php into your protected/components folder
 - add the following line to your config/main.php: 
 ~~~
+[php]
 'components' => array(
     ...
     'jsonize'=>array('class'=>'jsonize'),
@@ -21,137 +22,39 @@ This extension is a simple to use function for json encoding CActiveRecord and t
 ~~~
 - optionally preload the component:
 ~~~
+[php]
 'preload' => array( ..., 'jsonize'),
-~~~
-
-##API
-
-~~~
-function jsonizenc($data, $attributes=true, $onlySpecifiedRelations = false, $onlySpecifiedAttributes = false) {
-	return json_encode(jsonize($data, $attributes, $onlySpecifiedRelations, $onlySpecifiedAttributes));
-}
-/**
- * 
- * @param mixed $data an ActiveRecord or array of ActiveRecord
- * @param $attributes array of attributes/relations to be processed e.g ['client','items' => ['product']] // nested relations
- * @param bool $onlySpecifiedRelations if to send all loaded relations or only the ones specified in $attributes 
- * @param bool $onlySpecifiedAttributes if to send all attributes or only the ones specified in $attributes 
- */
-function jsonize($data, $attributes=true, $onlySpecifiedRelations = false, $onlySpecifiedAttributes = false);
 ~~~
 
 ##Usage
 
-These example start from the simplest uses, progressively increasing the 
-complexity of needed output.
-
 ~~~
-Yii::app()->jsonize; // load the component (only needed if it isn't preloaded)
+[php]
+Yii::app()->jsonize; // load the component (not needed if it is preloaded)
 
-$user = new User::model()->findByPk(1);
-$userArray = jsonize($user); // returns array('id'=>1,'name'=>'David')
-echo json_encode($userArray); // output: {id: 1, name: 'David' }
-echo jsonizenc($user); // shortcut for json_encode(jsonize($user))
+$users = User::model()->with('votes')->findAll($criteria);
 
-$users = User::model()->findAll();
-echo jsonizenc($users); // output: {{id: 1, name: 'David' }, {id: 2, name: 'John' }}
+echo jsonizenc($users); // all attributes and loaded relations ('votes' in this example) are processed
+$array = jsonize($users); // same as before, but returns an array of attributes/relations, not a JSON-encoded string
 
-// now load relations
-$user->posts; // load user's posts
-echo jsonizenc($user);
-// output is now: {
-	"id":"1",
-	"name":"David",
-	"posts":[
-		{
-			"id":"1",
-			"user_id":"1",
-			"title":"new post"
-		},{
-			"id":"2",
-			"user_id":"1",
-			"title":"other post"
-		}
-	]
-}
+echo jsonizenc($users, array('posts','comments')); // all attributes are processed, specified relations and loaded ones ('posts','comments' and 'votes') are processed
 
-$user->comments; // load user's comments
-echo jsonizenc($user);
-// output is now: {
-	"id":"1",
-	"name":"David",
-	"posts":[
-		{
-			"id":"1",
-			"user_id":"1",
-			"title":"new post"
-		},{
-			"id":"2",
-			"user_id":"1",
-			"title":"other post"
-		}
-	],
-	"comments":[
-		{
-			"id":"1",
-			"user_id":"1",
-			"comment":"other post comment"
-			"post_id": "2"
-		}
-	]
-}
-// encode an array of ActiveRecords
-echo jsonizenc(User::model()->findAll()); // output [
-	{
-		id:1,
-		name:'David'
-	},{
-		id:2,
-		name:'John'
-	}]
+echo jsonizenc($users, array('posts','comments'), true); // all attributes are processed, but only specified relations ('posts','comments') are processed
+
+echo jsonizenc($users, array('id', 'username', 'email', 'first_name', 'last_name', 
+    'posts' => array( 'id', 'author_id', 'content' ),
+    'comments' => array( 'id', 'author_id', 'content' ),
+    'votes' => array( /* attributes here */))
+), true, true); // only specified attributes and relations are processed
 ~~~
 
-#Specifying attributes and relations
+#Processing nested relations
 
-By default, all attributes (returned by getAttributes()) and all LOADED relations are processed
-
-- Narrowing the relations to be processed
-~~~
-echo jsonizenc($user, array('posts'), true); 
-// true means: only specified relations are to be processed (default: all loaded relations are processed)
-~~~
-- Narrowing the attributes
-~~~
-echo jsonizenc($user, array('name'), true, true); 
-// true means: only process specified attributes (default: all attributes)
-// output: { name: 'David' }
-
-echo jsonizenc($user, array('name','posts'), true, true); // narrow relations and attributes
-~~~
-- Force loading relations
+By default, all attributes (returned by getAttributes()) and all first-level LOADED relations are processed. Nested relations have to be loaded explicitly:
 
 ~~~
-$user = User::model()->findByPk(1);
-
-echo jsonizenc($user, array('posts')); 
-// output is now: {
-	"id":"1",
-	"name":"David",
-	"posts":[
-		{
-			"id":"1",
-			"user_id":"1",
-			"title":"new post"
-		},{
-			"id":"2",
-			"user_id":"1",
-			"title":"other post"
-		}
-	],
-~~~
-- Force loading nested relations
-~~~
-echo jsonizenc($users, array('posts'=>array('user'))); 
+[php]
+echo jsonizenc($users, array('posts'=>array('comments'))); 
 // output {
 	"id":"1",
 	"name":"David",
@@ -160,32 +63,64 @@ echo jsonizenc($users, array('posts'=>array('user')));
 			"id":"1",
 			"user_id":"1",
 			"title":"new post",
-			"user": {
+			"comments": [{
 				"id": 1,
-				"name": "David"
-			}
+				"post_id": "1"
+				"text": "Nice post"
+			}]
 		},{
 			"id":"2",
 			"user_id":"1",
 			"title":"other post",
-			"user": {
-				"id": 1,
-				"name": "David"
-			}
+			"comments": [{
+				"id": "2",
+				"post_id": "2",
+				"text": "comment other post"
+			},{
+				"id": "3",
+				"post_id: "2",
+				"text": "other comment other post"
+			}]
 		}
 	]
 }
 ~~~
 There's no limit to this notation, you could do:
 ~~~
+[php]
 echo jsonizenc($users, array('posts'=>array('user'=>array('posts','comments'))));
+// it will output also $user->posts, $user->posts->user, $user->posts->user->posts and $user->posts->user->comments
 ~~~
 ##Notes
 
-For nested relations, the for specifying which attributes/relations are to be processed policy is the same as
-the first one. For example:
+For nested relations, the policy specifying which attributes/relations are to be processed is the same as the first one. For example:
 ~~~
+[php]
 echo jsonizenc($users, array('id','posts'=>array('title','user'=>array('name')), true, true)); 
 // only specified attributes and relations of user, user.posts and user.posts.user will be processed
 ~~~
 
+##API
+
+~~~
+[php]
+/**
+ * @param mixed $data an ActiveRecord or array of ActiveRecord
+ * @param $attributes array of attributes/relations to be processed e.g ['client','items' => ['product']] // nested relations
+ * @param bool $onlySpecifiedRelations if to send all loaded relations or only the ones specified in $attributes 
+ * @param bool $onlySpecifiedAttributes if to send all attributes or only the ones specified in $attributes 
+ */
+function jsonize($data, $attributes=true, $onlySpecifiedRelations = false, $onlySpecifiedAttributes = false);
+
+/**
+ * shortcut for json_encode(jsonize($data))
+ * @see jsonize()
+ */ 
+function jsonizenc($data, $attributes=true, $onlySpecifiedRelations = false, $onlySpecifiedAttributes = false);
+}
+
+~~~
+
+##Resources
+
+[Github](https://github.com/cnlevy/jsonize "Github")
