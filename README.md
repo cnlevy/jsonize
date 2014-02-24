@@ -10,35 +10,30 @@ This extension is a simple to use function for json encoding CActiveRecord and t
 
 ##Installation
 
-- copy jsonize.php into your protected/components folder
+- copy jsonize.php into your protected/extensions/jsonize folder
 - add the following line to your config/main.php: 
 ~~~php
-'components' => array(
+'import' => array(
     ...
-    'jsonize'=>array('class'=>'jsonize'),
+    'ext.jsonize.Jsonize',
     ...
 ),
 ~~~
-- optionally preload the component:
-~~~php
-'preload' => array( ..., 'jsonize'),
-~~~
+
 
 ##Usage
 
 ~~~php
-Yii::app()->jsonize; // load the component (not needed if it is preloaded)
-
 $users = User::model()->with('votes')->findAll($criteria);
 
-echo jsonizenc($users); // all attributes and loaded relations ('votes' in this example) are processed
-$array = jsonize($users); // same as before, but returns an array of attributes/relations, not a JSON-encoded string
+echo Jsonize::encode($users); // all attributes and loaded relations ('votes' in this example) are processed
+$array = Jsonize::encode(($users); // same as before, but returns an array of attributes/relations, not a JSON-encoded string
 
-echo jsonizenc($users, array('posts','comments')); // all attributes are processed, specified relations and loaded ones ('posts','comments' and 'votes') are processed
+echo Jsonize::encode($users, array('posts','comments')); // all attributes are processed, specified relations and loaded ones ('posts','comments' and 'votes') are processed
 
-echo jsonizenc($users, array('posts','comments'), true); // all attributes are processed, but only specified relations ('posts','comments') are processed
+echo Jsonize::encode($users, array('posts','comments'), true); // all attributes are processed, but only specified relations ('posts','comments') are processed
 
-echo jsonizenc($users, array('id', 'username', 'email', 'first_name', 'last_name', 
+echo Jsonize::encode($users, array('id', 'username', 'email', 'first_name', 'last_name', 
     'posts' => array( 'id', 'author_id', 'content' ),
     'comments' => array( 'id', 'author_id', 'content' ),
     'votes' => array( /* attributes here */))
@@ -50,7 +45,7 @@ echo jsonizenc($users, array('id', 'username', 'email', 'first_name', 'last_name
 By default, all attributes (returned by getAttributes()) and all first-level LOADED relations are processed. Nested relations have to be loaded explicitly:
 
 ~~~php
-echo jsonizenc($users, array('posts'=>array('comments'))); 
+echo Jsonize::encode($users, array('posts'=>array('comments'))); 
 // output {
 	"id":"1",
 	"name":"David",
@@ -83,14 +78,14 @@ echo jsonizenc($users, array('posts'=>array('comments')));
 ~~~
 There's no limit to this notation, you could do:
 ~~~php
-echo jsonizenc($users, array('posts'=>array('user'=>array('posts','comments'))));
+echo Jsonize::encode($users, array('posts'=>array('user'=>array('posts','comments'))));
 // it will output also $user->posts, $user->posts->user, $user->posts->user->posts and $user->posts->user->comments
 ~~~
 ##Notes
 
 For nested relations, the policy specifying which attributes/relations are to be processed is the same as the first one. For example:
 ~~~php
-echo jsonizenc($users, array('id','posts'=>array('title','user'=>array('name')), true, true)); 
+echo Jsonize::encode($users, array('id','posts'=>array('title','user'=>array('name')), true, true)); 
 // only specified attributes and relations of user, user.posts and user.posts.user will be processed
 ~~~
 
