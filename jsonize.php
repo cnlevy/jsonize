@@ -31,6 +31,9 @@
  */
 class Jsonize {
 	public function init() {}
+	public static function encode($data, $attributes=true, $onlySpecifiedRelations = false, $onlySpecifiedAttributes = false) {
+		return jsonizenc($data, $attributes, $onlySpecifiedRelations, $onlySpecifiedAttributes);
+	}
 }
 
 /**
