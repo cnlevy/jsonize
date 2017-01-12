@@ -2,7 +2,7 @@
 /**
  * Copyright (c) 2014, cnlevy <cnlevy@gmail.com>
  * All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *     * Redistributions of source code must retain the above copyright
@@ -13,7 +13,7 @@
  *     * Neither the name of the <organization> nor the
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -24,7 +24,7 @@
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- * 
+ *
  * @link http://github.com/cnlevy/jsonize
  * @version 1.0
  * @author cnlevy <cnlevy@gmail.com>
@@ -44,11 +44,11 @@ function jsonizenc($data, $attributes=true, $onlySpecifiedRelations = false, $on
 	return json_encode(jsonize($data, $attributes, $onlySpecifiedRelations, $onlySpecifiedAttributes));
 }
 /**
- * 
+ *
  * @param mixed $data an ActiveRecord or array of ActiveRecord
  * @param $attributes array of relations to be loaded e.g array('client','items'=>array('product')) // nested relations
- * @param bool $onlySpecifiedRelations if to send all loaded relations or only the ones specified in $attributes 
- * @param bool $onlySpecifiedAttributes if to send all attributes or only the ones specified in $attributes 
+ * @param bool $onlySpecifiedRelations if to send all loaded relations or only the ones specified in $attributes
+ * @param bool $onlySpecifiedAttributes if to send all attributes or only the ones specified in $attributes
  */
 function jsonize($data, $attributes=true, $onlySpecifiedRelations = false, $onlySpecifiedAttributes = false) {
 	if (is_array($data)) { // can be an empty array
@@ -58,7 +58,7 @@ function jsonize($data, $attributes=true, $onlySpecifiedRelations = false, $only
 		}
 		return $json;
 	}
-	if ($data==null) return null;
+	if ($data===null) return null;
 	if (!is_object($data)) return $data; //json_encode($data);
 	$ar=$data;
 	//Yii::log('jsonize class '.get_class($ar));
@@ -68,9 +68,9 @@ function jsonize($data, $attributes=true, $onlySpecifiedRelations = false, $only
 	} else {
 		$json=$ar->getAttributes(); // on va dire sans ca ?
 		foreach($json as $name=>$value) {
-			if (is_object($value) || is_array($value)) { // relation defined by virtual attribute 
-				if ($onlySpecifiedRelations) 
-					unset($json[$name]); // will be retrieved later 
+			if (is_object($value) || is_array($value)) { // relation defined by virtual attribute
+				if ($onlySpecifiedRelations)
+					unset($json[$name]); // will be retrieved later
 				else { // can lead to stack overflow if it loads recursively more objects, therefore, only load explicitly specified relations
 					$json[$name]=jsonize($value, @$attributes[$name]?:true, true, $onlySpecifiedAttributes);
 				}
@@ -86,7 +86,7 @@ function jsonize($data, $attributes=true, $onlySpecifiedRelations = false, $only
 			}
 		}
 	}
-	// include explicitly requested relations or virtual columns or attributes 
+	// include explicitly requested relations or virtual columns or attributes
 	if (is_array($attributes)) {
 		foreach($attributes as $name=>$value) {
 			if (is_numeric($name)) {// simple relation, handle scalar values, activerecord objects and arrays of ActiveRecord
